@@ -24,10 +24,3 @@ pub struct UpdateLeaderboard<'info> {
     pub user_game_acct: Account<'info, UserGameAccount>,
     pub user: Signer<'info>,
 }
-
-#[event]
-pub struct LeaderboardUpdated {
-    pub game_id: Pubkey,
-    pub top_player: Pubkey,
-    pub top_score: u64,
-}

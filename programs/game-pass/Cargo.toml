@@ -1,7 +1,7 @@
 [package]
-name = "dao-voting"
+name = "game_pass"
 version = "0.1.0"
-description = "Created with Anchor"
+description = "Game Pass Helps developer manage gamestates, leaderboards, badges and users information"
 edition = "2021"
 
 [lib]
@@ -18,5 +18,3 @@ default = []
 
 [dependencies]
 anchor-lang = { version = "0.28.0", features = ["init-if-needed"] }
-
-

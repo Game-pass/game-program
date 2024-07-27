@@ -4,11 +4,15 @@ use anchor_lang::solana_program::log::sol_log_compute_units;
 // use anchor_spl::token::{Mint, Token, TokenAccount, Transfer};
 
 pub mod error;
+pub mod events;
 pub mod states;
+pub mod utils;
 
 use crate::{
     error::ErrorCode,
+    events::*,
     states::{alertstate::*, badgestates::*, gamestate::*, leaderboardstates::*},
+    // utils::*,
 };
 
 // Declare the program ID
@@ -95,7 +99,12 @@ pub mod game_pass {
         user_game_acct.update_at = created_at;
         user_game_acct.owner = *ctx.accounts.user.key;
         user_game_acct.badges = Vec::new();
-        user_game_acct.streak = UserStreak::default();
+        user_game_acct.streak = UserStreak {
+            user_game_account: user_game_acct.to_account_info().key(),
+            current_streak: 0,
+            longest_streak: 0,
+            last_played_at: created_at,
+        };
         user_game_acct.custom_data = "{}".to_string();
 
         game_pass.user_game_account.push(UserGameAcct {
@@ -128,11 +137,11 @@ pub mod game_pass {
 
         user_game_acct.score += score;
 
-        // Check if any badges should be awarded
-        check_and_award_badges(ctx, user_game_acct.score)?;
+        // // Check if any badges should be awarded
+        // check_and_award_badges(ctx, user_game_acct.score)?;
 
-        // Check if any alerts should be triggered
-        check_and_trigger_alerts(ctx, user_game_acct.score)?;
+        // // Check if any alerts should be triggered
+        // check_and_trigger_alerts(ctx, user_game_acct.score)?;
 
         sol_log_compute_units();
 
@@ -155,11 +164,11 @@ pub mod game_pass {
 
         user_game_acct.level += level;
 
-        // Check if any badges should be awarded
-        check_and_award_badges(ctx, user_game_acct.level)?;
+        // // Check if any badges should be awarded
+        // check_and_award_badges(ctx, user_game_acct.level)?;
 
-        // Check if any alerts should be triggered
-        check_and_trigger_alerts(ctx, user_game_acct.level)?;
+        // // Check if any alerts should be triggered
+        // check_and_trigger_alerts(ctx, user_game_acct.level)?;
 
         sol_log_compute_units();
 

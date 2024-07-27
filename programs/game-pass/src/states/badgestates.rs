@@ -28,20 +28,6 @@ pub struct UserBadgeProgress {
     pub progress: u64,
 }
 
-#[event]
-pub struct BadgeCreated {
-    pub badge_id: Pubkey,
-    pub game_id: Pubkey,
-    pub badge_name: String,
-}
-
-#[event]
-pub struct BadgeAssigned {
-    pub user: Pubkey,
-    pub badge_id: Pubkey,
-    pub game_id: Pubkey,
-}
-
 // Context structs
 #[derive(Accounts)]
 pub struct CreateBadge<'info> {
@@ -80,22 +66,6 @@ pub struct UpdateBadgeProgress<'info> {
     #[account(mut)]
     pub user_game_acct: Account<'info, UserGameAccount>,
     pub user: Signer<'info>,
-}
-
-#[event]
-pub struct TieredBadgeCreated {
-    pub badge_id: Pubkey,
-    pub game_id: Pubkey,
-    pub badge_name: String,
-    pub tier_count: u8,
-}
-
-#[event]
-pub struct BadgeProgressUpdated {
-    pub user: Pubkey,
-    pub badge_id: Pubkey,
-    pub new_tier: u8,
-    pub total_progress: u64,
 }
 
 #[derive(Accounts)]
