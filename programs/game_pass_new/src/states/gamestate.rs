@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-use super::alertstate::UserStreak;
+use crate::streak::UserStreak;
 
 // This is the Game Pass contract
 #[derive(Accounts)]
