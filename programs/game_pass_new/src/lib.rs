@@ -6,17 +6,18 @@ use anchor_lang::solana_program::log::sol_log_compute_units;
 pub mod error;
 pub mod events;
 pub mod states;
+pub mod streak;
 pub mod utils;
 
 use crate::{
     error::ErrorCode,
     events::*,
     states::{alertstate::*, badgestates::*, gamestate::*, leaderboardstates::*},
-    // utils::*,
+    streak::UserStreak,
 };
 
 // Declare the program ID
-declare_id!("9oCwyUjA7gb562qDNUN1RM2UcuCgduPAdK3yFHS5ZjwN");
+declare_id!("HjXLTfi9x8ASLgVGjYCZTxpBPfgdWpLxNTZi7Zyab7ZE");
 
 #[program]
 pub mod game_pass {
@@ -25,7 +26,7 @@ pub mod game_pass {
 
     use super::*;
 
-    pub fn initialize_main_account(ctx: Context<Initialize>) -> ProgramResult {
+    pub fn intialize_game_pass(ctx: Context<Initialize>) -> ProgramResult {
         let game_pass = &mut ctx.accounts.game_pass;
         game_pass.total_users = 0;
         game_pass.total_games = 0;
@@ -99,12 +100,12 @@ pub mod game_pass {
         user_game_acct.update_at = created_at;
         user_game_acct.owner = *ctx.accounts.user.key;
         user_game_acct.badges = Vec::new();
-        user_game_acct.streak = UserStreak {
-            user_game_account: user_game_acct.to_account_info().key(),
-            current_streak: 0,
-            longest_streak: 0,
-            last_played_at: created_at,
-        };
+        // user_game_acct.streak = UserStreak {
+        //     user_game_account: user_game_acct.to_account_info().key(),
+        //     current_streak: 0,
+        //     longest_streak: 0,
+        //     last_played_at: created_at,
+        // };
         user_game_acct.custom_data = "{}".to_string();
 
         game_pass.user_game_account.push(UserGameAcct {
@@ -180,6 +181,7 @@ pub mod game_pass {
         Ok(())
     }
 
+    //Badges
     pub fn create_badge(
         ctx: Context<CreateBadge>,
         badge_name: String,
@@ -230,6 +232,8 @@ pub mod game_pass {
 
         user_game_acct.badges.push(badge.key());
 
+        //There would be a mint here for the key
+
         sol_log_compute_units();
 
         emit!(BadgeAssigned {
@@ -237,42 +241,6 @@ pub mod game_pass {
             badge_id: badge.key(),
             game_id: game_acct.key(),
         });
-
-        Ok(())
-    }
-
-    pub fn update_leaderboard(ctx: Context<UpdateLeaderboard>) -> Result<()> {
-        let game_acct = &ctx.accounts.game_acct;
-        let leaderboard = &mut ctx.accounts.leaderboard;
-        let user_game_acct = &ctx.accounts.user_game_acct;
-
-        if leaderboard.top_players.len() < 10
-            || user_game_acct.score > leaderboard.top_players.last().unwrap().score
-        {
-            leaderboard
-                .top_players
-                .retain(|entry| entry.user != user_game_acct.key());
-
-            let new_entry = LeaderboardEntry {
-                user: user_game_acct.key(),
-                score: user_game_acct.score,
-            };
-            leaderboard.top_players.push(new_entry);
-
-            leaderboard
-                .top_players
-                .sort_by(|a, b| b.score.cmp(&a.score));
-
-            leaderboard.top_players.truncate(10);
-
-            leaderboard.last_updated = Clock::get()?.unix_timestamp;
-
-            emit!(LeaderboardUpdated {
-                game_id: game_acct.key(),
-                top_player: leaderboard.top_players[0].user,
-                top_score: leaderboard.top_players[0].score,
-            });
-        }
 
         Ok(())
     }
@@ -334,6 +302,43 @@ pub mod game_pass {
                     total_progress: user_badge_progress.progress,
                 });
             }
+        }
+
+        Ok(())
+    }
+
+    //Leaderboard
+    pub fn update_leaderboard(ctx: Context<UpdateLeaderboard>) -> Result<()> {
+        let game_acct = &ctx.accounts.game_acct;
+        let leaderboard = &mut ctx.accounts.leaderboard;
+        let user_game_acct = &ctx.accounts.user_game_acct;
+
+        if leaderboard.top_players.len() < 10
+            || user_game_acct.score > leaderboard.top_players.last().unwrap().score
+        {
+            leaderboard
+                .top_players
+                .retain(|entry| entry.user != user_game_acct.key());
+
+            let new_entry = LeaderboardEntry {
+                user: user_game_acct.key(),
+                score: user_game_acct.score,
+            };
+            leaderboard.top_players.push(new_entry);
+
+            leaderboard
+                .top_players
+                .sort_by(|a, b| b.score.cmp(&a.score));
+
+            leaderboard.top_players.truncate(10);
+
+            leaderboard.last_updated = Clock::get()?.unix_timestamp;
+
+            emit!(LeaderboardUpdated {
+                game_id: game_acct.key(),
+                top_player: leaderboard.top_players[0].user,
+                top_score: leaderboard.top_players[0].score,
+            });
         }
 
         Ok(())
