@@ -3,11 +3,13 @@
         "lint:fix": "prettier */*.js \"*/**/*{.js,.ts}\" -w",
         "lint": "prettier */*.js \"*/**/*{.js,.ts}\" --check",
         "build": "sudo anchor build",
-        "deploy": "sudo anchor deploy"
+        "deploy": "sudo anchor deploy",
+        "test": "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests /**/*.ts"
     },
     "dependencies": {
         "@coral-xyz/anchor": "^0.28.0",
-        "@types/node": "^20.14.10"
+        "@solana/web3.js": "^1.95.2",
+        "fs": "^0.0.1-security"
     },
     "devDependencies": {
         "@types/bn.js": "^5.1.0",
